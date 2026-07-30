@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🍜 Genki Ya – Mesas</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+    :root {
+      --dark: #1a1a2e; --card: #16213e; --accent: #e94560;
+      --gold: #f0c040; --text: #f0f0f0; --muted: #a0a0b0;
+      --green: #27ae60; --red: #e74c3c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background: var(--dark); color: var(--text); min-height: 100vh; }
+
+    header {
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      padding: 22px 16px 14px; text-align: center;
+      border-bottom: 3px solid var(--accent);
+    }
+    header h1 {
+      font-size: 1.8rem; font-weight: 700;
+      background: linear-gradient(90deg, var(--gold), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    header p { color: var(--muted); font-size: 0.8rem; margin-top: 4px; }
+
+    .stats {
+      display: flex; justify-content: center; gap: 20px;
+      padding: 16px; background: #0f0f1e; border-bottom: 1px solid #2a2a4a;
+    }
+    .stat { text-align: center; }
+    .stat-num { font-size: 1.5rem; font-weight: 700; }
+    .stat-label { font-size: 0.7rem; color: var(--muted); }
+    .stat.libre .stat-num { color: var(--green); }
+    .stat.ocupada .stat-num { color: var(--red); }
+    .stat.total .stat-num { color: var(--gold); }
+
+    .filtros {
+      display: flex; justify-content: center; gap: 10px;
+      padding: 14px 16px; flex-wrap: wrap;
+    }
+    .filtro-btn {
+      padding: 7px 18px; border-radius: 30px; border: 1px solid #444;
+      background: #1a1a3e; color: var(--muted); font-size: 0.8rem;
+      cursor: pointer; transition: all 0.2s; font-family: 'Poppins', sans-serif;
+    }
+    .filtro-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    .container { max-width: 1000px; margin: 0 auto 40px; padding: 0 12px; }
+
+    /* categorías */
+    .categoria {
+      margin-top: 28px;
+    }
+    .categoria:first-of-type { margin-top: 16px; }
+    .categoria-titulo {
+      font-size: 1.25rem; font-weight: 600; letter-spacing: 0.5px;
+      border-bottom: 2px solid var(--accent); padding-bottom: 6px;
+      margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+    }
+    .categoria-titulo span { background: var(--accent); padding: 0 12px; border-radius: 30px; font-size: 0.7rem; color: #fff; }
+
+    .mesas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+      gap: 12px; 
+    }
+
+    .mesa-card {
+      border-radius: 14px; padding: 14px 12px 10px;
+      text-align: center; transition: all 0.25s;
+      border: 2px solid transparent; position: relative;
+    }
+    .mesa-card.libre { background: #0f2318; border-color: var(--green); }
+    .mesa-card.ocupada { background: #2e0f0f; border-color: var(--red); }
+
+    .mesa-top {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 10px;
+    }
+    .mesa-num { font-size: 1.1rem; font-weight: 700; color: var(--gold); }
+    .estado-badge {
+      font-size: 0.65rem; font-weight: 600; padding: 3px 8px;
+      border-radius: 20px; background: rgba(0,0,0,0.3);
+    }
+    .mesa-card.libre .estado-badge { color: var(--green); }
+    .mesa-card.ocupada .estado-badge { color: var(--red); }
+
+    .btn-estado {
+      width: 100%; padding: 6px 0; border-radius: 8px; border: none;
+      font-size: 0.72rem; font-weight: 600; cursor: pointer;
+      margin-bottom: 8px; transition: all 0.2s;
+      font-family: 'Poppins', sans-serif;
+    }
+    .mesa-card.libre .btn-estado { background: var(--red); color: #fff; }
+    .mesa-card.libre .btn-estado:hover { background: #c0392b; }
+    .mesa-card.ocupada .btn-estado { background: var(--green); color: #fff; }
+    .mesa-card.ocupada .btn-estado:hover { background: #219150; }
+
+    .btn-mesa {
+      display: block; width: 100%;
+      background: linear-gradient(135deg, var(--accent), #a93226);
+      color: #fff; text-decoration: none;
+      padding: 8px 0; border-radius: 8px;
+      font-weight: 600; font-size: 0.78rem;
+      transition: all 0.2s;
+    }
+    .btn-mesa:hover { filter: brightness(1.15); }
+    .mesa-card.hidden { display: none; }
+
+    footer {
+      text-align: center; padding: 18px; color: var(--muted);
+      font-size: 0.72rem; border-top: 1px solid #2a2a4a;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🍜 Genki Ya</h1>
+  <p>Toma de pedidos por mesa · Categorías</p>
+</header>
+
+<div class="stats">
+  <div class="stat total">
+    <div class="stat-num" id="total-count">35</div>
+    <div class="stat-label">Total</div>
+  </div>
+  <div class="stat libre">
+    <div class="stat-num" id="libre-count">35</div>
+    <div class="stat-label">Libres</div>
+  </div>
+  <div class="stat ocupada">
+    <div class="stat-num" id="ocupada-count">0</div>
+    <div class="stat-label">Ocupadas</div>
+  </div>
+</div>
+
+<div class="filtros">
+  <button class="filtro-btn active" onclick="filtrar('todas', this)">Todas</button>
+  <button class="filtro-btn" onclick="filtrar('libre', this)">🟢 Libres</button>
+  <button class="filtro-btn" onclick="filtrar('ocupada', this)">🔴 Ocupadas</button>
+</div>
+
+<div class="container" id="app">
+  <!-- Las categorías se inyectan desde JS para mantener el código limpio -->
+  <div id="categorias-container"></div>
+</div>
+
+<footer>🍣 Genki Ya by Benjhamin &nbsp;|&nbsp; Sistema de pedidos · Categorías</footer>
+
+<script>
+  // ========== DEFINICIÓN DE MESAS POR CATEGORÍA ==========
+  const categoriasData = [
+    {
+      nombre: 'Salón 1',
+      descripcion: 'mesas 1-9',
+      mesas: [1,2,3,4,5,6,7,8,9]
+    },
+    {
+      nombre: 'Salón 2',
+      descripcion: 'mesas 10-16',
+      mesas: [10,11,12,13,14,15,16]
+    },
+    {
+      nombre: 'Línea',
+      descripcion: '17,18,19,28,29,30',
+      mesas: [17,18,19,28,29,30]
+    },
+    {
+      nombre: 'Terraza / Interior',
+      descripcion: '20-27',
+      mesas: [20,21,22,23,24,25,26,27]
+    }
+  ];
+
+  // Mapeo de mesa -> tableId (según el HTML original)
+  const tableIdMap = {
+    1: '100034', 2: '100035', 3: '100036', 4: '100037', 5: '100038',
+    6: '100039', 7: '100040', 8: '100041', 9: '100042', 10: '100043',
+    11: '100044', 12: '100045', 13: '100046', 14: '100047', 15: '100048',
+    16: '100049', 17: '100050', 18: '100051', 19: '100052', 20: '100053',
+    21: '100111', 22: '100113', 23: '100114', 24: '100115', 25: '100116',
+    26: '100117', 27: '100118', 28: '100119', 29: '100120', 30: '100121',
+    31: '100122', 32: '100123', 33: '100124', 34: '100125', 35: '100126'
+  };
+
+  // ========== RENDERIZAR CATEGORÍAS Y MESAS ==========
+  function renderizarCategorias() {
+    const container = document.getElementById('categorias-container');
+    container.innerHTML = '';
+
+    // Recorremos cada categoría
+    categoriasData.forEach((cat, idx) => {
+      const catDiv = document.createElement('div');
+      catDiv.className = 'categoria';
+      catDiv.dataset.categoria = cat.nombre;
+
+      // Título de categoría
+      const titulo = document.createElement('div');
+      titulo.className = 'categoria-titulo';
+      titulo.innerHTML = `${cat.nombre} <span>${cat.descripcion}</span>`;
+      catDiv.appendChild(titulo);
+
+      // Grid de mesas
+      const grid = document.createElement('div');
+      grid.className = 'mesas-grid';
+
+      // Crear cada mesa de esta categoría
+      cat.mesas.forEach(num => {
+        const tableId = tableIdMap[num] || '000000';
+        const card = document.createElement('div');
+        card.className = 'mesa-card libre';
+        card.id = `card-${num}`;
+
+        // Top: número + badge
+        const top = document.createElement('div');
+        top.className = 'mesa-top';
+        const numSpan = document.createElement('span');
+        numSpan.className = 'mesa-num';
+        numSpan.textContent = `Mesa ${num}`;
+        const badge = document.createElement('span');
+        badge.className = 'estado-badge';
+        badge.id = `badge-${num}`;
+        badge.textContent = '🟢 Libre';
+        top.appendChild(numSpan);
+        top.appendChild(badge);
+        card.appendChild(top);
+
+        // Botón cambiar estado
+        const btnEstado = document.createElement('button');
+        btnEstado.className = 'btn-estado';
+        btnEstado.textContent = 'Cambiar estado';
+        btnEstado.onclick = (function(n) {
+          return function() { toggleEstado(n); };
+        })(num);
+        card.appendChild(btnEstado);
+
+        // Enlace abrir pedido
+        const link = document.createElement('a');
+        link.className = 'btn-mesa';
+        link.href = `https://h5-catering.maiga.team/index?shopId=100910&tableId=${tableId}`;
+        link.textContent = '👉 Abrir Pedido';
+        card.appendChild(link);
+
+        grid.appendChild(card);
+      });
+
+      catDiv.appendChild(grid);
+      container.appendChild(catDiv);
+    });
+
+    // Actualizar contadores
+    updateStats();
+  }
+
+  // ========== FUNCIONES DE ESTADO ==========
+  function toggleEstado(num) {
+    const card = document.getElementById('card-' + num);
+    if (!card) return;
+    const badge = document.getElementById('badge-' + num);
+    if (!badge) return;
+    const isLibre = card.classList.contains('libre');
+    if (isLibre) {
+      card.classList.replace('libre', 'ocupada');
+      badge.textContent = '🔴 Ocupada';
+    } else {
+      card.classList.replace('ocupada', 'libre');
+      badge.textContent = '🟢 Libre';
+    }
+    updateStats();
+  }
+
+  function updateStats() {
+    const libres = document.querySelectorAll('.mesa-card.libre').length;
+    const ocupadas = document.querySelectorAll('.mesa-card.ocupada').length;
+    const total = libres + ocupadas;
+    document.getElementById('libre-count').textContent = libres;
+    document.getElementById('ocupada-count').textContent = ocupadas;
+    document.getElementById('total-count').textContent = total;
+  }
+
+  // ========== FILTROS (mantiene categorías) ==========
+  function filtrar(tipo, btn) {
+    document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+
+    document.querySelectorAll('.mesa-card').forEach(card => {
+      if (tipo === 'todas') {
+        card.classList.remove('hidden');
+      } else if (tipo === 'libre') {
+        card.classList.toggle('hidden', !card.classList.contains('libre'));
+      } else if (tipo === 'ocupada') {
+        card.classList.toggle('hidden', !card.classList.contains('ocupada'));
+      }
+    });
+  }
+
+  // ========== INICIO ==========
+  document.addEventListener('DOMContentLoaded', renderizarCategorias);
+</script>
+
+</body>
+</html>
